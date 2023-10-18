@@ -1,39 +1,33 @@
 import random
 import math
+from datetime import datetime
 from collections import deque
+import sys
 
 n = 1000000
-r = 1.36
-
-# init matrix with tupels
-# (id, (x_coordinate, y_coordinate), current_state, next_state)
-
-# matrix = np.reshape(np.arange(0,n),(1000,1000))
+r = float(sys.argv[1])
+include_long_range = int(sys.argv[2])
+threshold = 0.9
+a = 2
 
 sqrt_n = int(math.sqrt(n))
 
-# todo: make grid adjustable to r
+# create grid according to n and the given radius r
+# add an additional row and column in order to work with uneven radii
 grid = [[[] for _ in range(int(sqrt_n / r) + 1)] for _ in range(int(sqrt_n / r) + 1)]
 
+# place nodes randomly on "play field"
 nodes = {}
 for i in range(0, n):
     x = math.trunc(random.uniform(0, sqrt_n) * 100.0) / 100.0
     y = math.trunc(random.uniform(0, sqrt_n) * 100.0) / 100.0
 
-    # add point to square inside the grid
-    grid_x = math.floor(x / r)
-    grid_y = math.floor(y / r)
-    grid[grid_y][grid_x].append(i)
-
     # store point and metadata
-    nodes[i] = [(x, y), (grid_x, grid_y), 'S', '']
+    nodes[i] = [(x, y), None, 'S', '']
 
-print(nodes[0])
+# print(nodes[0])
 
-print(grid[0][10])
-
-# generate geometric graph
-# i.e. connect vertices
+# print(grid[0][10])
 
 # init graph
 graph = {}
@@ -43,19 +37,8 @@ for i in range(0, n):
 
 print(len(graph))
 
-# new idea with grid and squares
-
-# for every iteration of r
-# go through every vertex v and check for neighbours who are reachable in radius r: create undirected edge
-# calculate a random point e in the grid starting from the vertex v, check if some vertex e_u is inside the radius r going from this grid point (choose the closest one) and draw a directed edge to this vertex e_u
-# check if we managed to get a connected component which includes 99% of all vertices (BFS to check connected components)
-# if yes, then the graph is done
-# otherwise change the radius r
-
-threshold = 0.99
-
 def is_threshold_reached(total, current, threshold):
-    return total / current >= threshold
+    return current / total >= threshold
 
 def bfs(node, graph, visited):
     queue = deque([node])
@@ -97,6 +80,7 @@ def get_points_of_neighbors(grid, row, col):
     # Possible directions to move in the grid, including diagonals
     directions = [
         (-1, 0), (1, 0), (0, -1), (0, 1),  # up, down, left, right
+        (0, 0), # include itself
         (-1, -1), (-1, 1), (1, -1), (1, 1)  # diagonal directions
     ]
 
@@ -113,38 +97,101 @@ def get_points_of_neighbors(grid, row, col):
     return neighbors
 
 def build_graph(graph, r):
+    no_long_range_counter = 0
     for i in range(0, n):
         square_of_i = nodes[i][1]
 
+        # todo: check points in my own square as well!
         # create list of all points which might be inside the radius r
         candidate_points = get_points_of_neighbors(grid, square_of_i[1], square_of_i[0])
 
+        # check if any of the candidates has a distance less or equal to r
         for candidate in candidate_points:
             if calculate_distance(nodes[i][0][0], nodes[i][0][1], nodes[candidate][0][0], nodes[candidate][0][1]) <= r:
                 graph[i].append(candidate)
                 graph[candidate].append(i)
 
-# todo: parallelize building graph, i.e. split number number of nodes onto different processes
-# give complete graph and subgraph (split according to the amount of cores) and process subgraphs separately
-build_graph(graph, r)
+        # add long range edge
+        if include_long_range == 1:
+            angle = random.uniform(0, 2 * math.pi)
+            x = random.uniform(0, 1)
+            d = (math.pow(x, (-1 / (a - 1))))
 
-print("building graph done.")
+            e_x = nodes[i][0][0] + (d * math.cos(angle))
+            e_y = nodes[i][0][1] + (d * math.sin(angle))
 
-size_of_largest_component = largest_connected_component(graph)
+            square_of_e = (math.floor(e_x / r), math.floor(e_y / r))
 
-print(size_of_largest_component)
+            long_range_candidates = get_points_of_neighbors(grid, square_of_e[1], square_of_e[0])
 
-size_of_largest_component = 0
-while False:#not is_threshold_reached(n, size_of_largest_component, threshold):
+            min_distance = sys.float_info.max
+            v = None
+            for candidate in long_range_candidates:
+                distance_to_long_range_candidate = calculate_distance(e_x, e_y,
+                                                                      nodes[candidate][0][0], nodes[candidate][0][1])
+                if (distance_to_long_range_candidate <= r) and distance_to_long_range_candidate < min_distance:
+                    min_distance = distance_to_long_range_candidate
+                    v = candidate
+
+            if v is not None:
+                graph[i].append(v)
+            else:
+                no_long_range_counter += 1
+
+            if False:
+                print("old pos_x: " + str(nodes[i][0][0]) + "; new pos_x " + str(e_x))
+                print("old pos_y: " + str(nodes[i][0][1]) + "; new pos_y " + str(e_y))
+
+    print("building graph with radius " + str(r) + " done")
+    print("No long range edge drawn in " + str(no_long_range_counter) + " cases")
+
+def write_graph_to_file(graph, file_path):
+    with open(file_path, 'w') as file:
+        for node, neighbors in graph.items():
+            # Convert the list of neighbors to a string, and write to the file
+            neighbors_str = ', '.join(map(str, neighbors))
+            file.write(f"{node}: {neighbors_str}\n")
+
+
+size_of_largest_component = 1
+while not is_threshold_reached(n, size_of_largest_component, threshold):
+    size_of_largest_component = 1
     # build grid with current radius
+    grid = [[[] for _ in range(int(sqrt_n / r) + 1)] for _ in range(int(sqrt_n / r) + 1)]
+
+    for i in range(0, n):
+        current_node = nodes[i]
+
+        grid_x = math.floor(current_node[0][0] / r)
+        grid_y = math.floor(current_node[0][1] / r)
+        grid[grid_y][grid_x].append(i)
+
+        # store point and metadata
+        nodes[i][1] = (grid_x, grid_y)
 
     # build graph according to grid
+    build_graph(graph, r)
 
     # check graph with current radius
     size_of_largest_component = largest_connected_component(graph)
-    if (n / size_of_largest_component) > threshold:
-        # decrease r
-        break
-    else:
-        # increase r
-        break
+    print("radius " + str(r) + " generated largest connected component with " + str(size_of_largest_component)
+          + " nodes")
+
+    if not is_threshold_reached(n, size_of_largest_component, threshold):
+        # init variables and increase radius
+        r += 0.01
+        grid = []
+        # init graph
+        graph = {}
+
+        for i in range(0, n):
+            graph[i] = list()
+
+    print("--------------------------")
+
+print("Found connected component which contains " + str((size_of_largest_component / n) * 100) +
+      "% of all nodes using a radius of " + str(r))
+
+# write graph to file to use it in the SIR simulation later on
+write_graph_to_file(graph, "graph_t" + str(threshold).replace(".", "_")
+                    + "_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
