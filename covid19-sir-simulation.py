@@ -1,197 +1,89 @@
+import math
+import sys
 import random
 import math
-from datetime import datetime
-from collections import deque
-import sys
 
-n = 1000000
-r = float(sys.argv[1])
-include_long_range = int(sys.argv[2])
-threshold = 0.9
-a = 2
+input_file = sys.argv[1]
+n = int(sys.argv[2])
+gamma = float(sys.argv[3])
 
-sqrt_n = int(math.sqrt(n))
+round_counter = 0
+MAX_ROUNDS = math.sqrt(n)
 
-# create grid according to n and the given radius r
-# add an additional row and column in order to work with uneven radii
-grid = [[[] for _ in range(int(sqrt_n / r) + 1)] for _ in range(int(sqrt_n / r) + 1)]
+SUSCEPTIBLE = 'S'
+INFECTED = 'I'
+RECOVERED = 'R'
 
-# place nodes randomly on "play field"
-nodes = {}
-for i in range(0, n):
-    x = math.trunc(random.uniform(0, sqrt_n) * 100.0) / 100.0
-    y = math.trunc(random.uniform(0, sqrt_n) * 100.0) / 100.0
+def read_graph(file_path):
+    graph = {}
+    with open(file_path, 'r') as file:
+        for line in file.readlines():
+            # Split the line at the colon
+            parts = line.split(':', 1)
 
-    # store point and metadata
-    nodes[i] = [(x, y), None, 'S', '']
+            # If the line isn't in the correct format, skip it
+            if len(parts) != 2:
+                continue
 
-# print(nodes[0])
+            # Extract the node and the adjacent nodes
+            node, adj_list_str = parts
 
-# print(grid[0][10])
+            # Convert the node to an integer
+            node = int(node.strip())
 
-# init graph
-graph = {}
+            # Split the adjacent nodes string by commas and convert to integers
+            adj_nodes = [int(adj_node.strip()) for adj_node in adj_list_str.split(',') if adj_node.strip().isdigit()]
 
-for i in range(0, n):
-    graph[i] = list()
+            # Add to the graph
+            # [adj_list, [curr_status, next_status]]
+            graph[node] = [adj_nodes, [SUSCEPTIBLE, SUSCEPTIBLE]]
 
-print(len(graph))
+    return graph
 
-def is_threshold_reached(total, current, threshold):
-    return current / total >= threshold
+# read graph
+graph = read_graph(input_file)
 
-def bfs(node, graph, visited):
-    queue = deque([node])
-    visited.add(node)
-    count = 1
+print(graph[0])
 
-    while queue:
-        current_node = queue.popleft()
+# set random node to I (infected)
+idx_infected = random.randint(0, len(graph) - 1)
 
-        for neighbor in graph[current_node]:
-            if neighbor not in visited:
-                visited.add(neighbor)
-                queue.append(neighbor)
-                count += 1
+graph[idx_infected][1][1] = INFECTED
 
-    return count  # return the count instead of just returning
-def largest_connected_component(graph):
-    visited = set()
-    largest_size = 0
+print(graph[idx_infected])
 
+infected_nodes = []
+recovered_nodes = []
+beta = 0.6
+
+# todo: why doesn't a outbreak occur for beta = 0.6?
+while round_counter < MAX_ROUNDS:
+    for infected_node in infected_nodes:
+        # has infected_node any neighbours?
+        if len(graph[infected_node][0]) > 0:
+            random_neighbour = graph[infected_node][0][random.randint(0, len(graph[infected_node][0]) - 1)]
+            if random.random() < beta and graph[random_neighbour][1][0] == SUSCEPTIBLE:
+                # infect random neighbour with probability beta
+                graph[random_neighbour][1][1] = INFECTED
+
+        if random.random() < gamma:
+            # recover infected node with probability gamma
+            graph[infected_node][1][1] = RECOVERED
+
+    # set new status to every node
     for node in graph:
-        if node not in visited:
-            size = bfs(node, graph, visited)
-            largest_size = max(largest_size, size)
+        if graph[node][1][0] != graph[node][1][1]:
+            graph[node][1][0] = graph[node][1][1]
 
-    return largest_size
+        if graph[node][1][0] == INFECTED:
+            infected_nodes.append(node)
 
-def calculate_distance(x1, y1, x2, y2):
-    return math.dist((x1, y1), (x2, y2))
+        if graph[node][1][1] == RECOVERED:
+            infected_nodes.remove(node)
 
-def get_points_of_neighbors(grid, row, col):
-    # List to store the neighbors
-    neighbors = []
+        graph[node][1][1] = ''
 
-    # Total number of rows and columns in the grid
-    num_rows = len(grid)
-    num_cols = len(grid[0]) if grid else 0
-
-    # Possible directions to move in the grid, including diagonals
-    directions = [
-        (-1, 0), (1, 0), (0, -1), (0, 1),  # up, down, left, right
-        (0, 0), # include itself
-        (-1, -1), (-1, 1), (1, -1), (1, 1)  # diagonal directions
-    ]
-
-    # Check all directions
-    for dr, dc in directions:
-        # Calculate the neighboring row and column
-        n_row, n_col = row + dr, col + dc
-
-        # Check if the neighboring cell is within the grid boundaries
-        if 0 <= n_row < num_rows and 0 <= n_col < num_cols:
-            # Add the neighboring cell to the list of neighbors
-            neighbors += grid[n_row][n_col]
-
-    return neighbors
-
-def build_graph(graph, r):
-    no_long_range_counter = 0
-    for i in range(0, n):
-        square_of_i = nodes[i][1]
-
-        # todo: check points in my own square as well!
-        # create list of all points which might be inside the radius r
-        candidate_points = get_points_of_neighbors(grid, square_of_i[1], square_of_i[0])
-
-        # check if any of the candidates has a distance less or equal to r
-        for candidate in candidate_points:
-            if calculate_distance(nodes[i][0][0], nodes[i][0][1], nodes[candidate][0][0], nodes[candidate][0][1]) <= r:
-                graph[i].append(candidate)
-                graph[candidate].append(i)
-
-        # add long range edge
-        if include_long_range == 1:
-            angle = random.uniform(0, 2 * math.pi)
-            x = random.uniform(0, 1)
-            d = (math.pow(x, (-1 / (a - 1))))
-
-            e_x = nodes[i][0][0] + (d * math.cos(angle))
-            e_y = nodes[i][0][1] + (d * math.sin(angle))
-
-            square_of_e = (math.floor(e_x / r), math.floor(e_y / r))
-
-            long_range_candidates = get_points_of_neighbors(grid, square_of_e[1], square_of_e[0])
-
-            min_distance = sys.float_info.max
-            v = None
-            for candidate in long_range_candidates:
-                distance_to_long_range_candidate = calculate_distance(e_x, e_y,
-                                                                      nodes[candidate][0][0], nodes[candidate][0][1])
-                if (distance_to_long_range_candidate <= r) and distance_to_long_range_candidate < min_distance:
-                    min_distance = distance_to_long_range_candidate
-                    v = candidate
-
-            if v is not None:
-                graph[i].append(v)
-            else:
-                no_long_range_counter += 1
-
-            if False:
-                print("old pos_x: " + str(nodes[i][0][0]) + "; new pos_x " + str(e_x))
-                print("old pos_y: " + str(nodes[i][0][1]) + "; new pos_y " + str(e_y))
-
-    print("building graph with radius " + str(r) + " done")
-    print("No long range edge drawn in " + str(no_long_range_counter) + " cases")
-
-def write_graph_to_file(graph, file_path):
-    with open(file_path, 'w') as file:
-        for node, neighbors in graph.items():
-            # Convert the list of neighbors to a string, and write to the file
-            neighbors_str = ', '.join(map(str, neighbors))
-            file.write(f"{node}: {neighbors_str}\n")
-
-
-size_of_largest_component = 1
-while not is_threshold_reached(n, size_of_largest_component, threshold):
-    size_of_largest_component = 1
-    # build grid with current radius
-    grid = [[[] for _ in range(int(sqrt_n / r) + 1)] for _ in range(int(sqrt_n / r) + 1)]
-
-    for i in range(0, n):
-        current_node = nodes[i]
-
-        grid_x = math.floor(current_node[0][0] / r)
-        grid_y = math.floor(current_node[0][1] / r)
-        grid[grid_y][grid_x].append(i)
-
-        # store point and metadata
-        nodes[i][1] = (grid_x, grid_y)
-
-    # build graph according to grid
-    build_graph(graph, r)
-
-    # check graph with current radius
-    size_of_largest_component = largest_connected_component(graph)
-    print("radius " + str(r) + " generated largest connected component with " + str(size_of_largest_component)
-          + " nodes")
-
-    if not is_threshold_reached(n, size_of_largest_component, threshold):
-        # init variables and increase radius
-        r += 0.01
-        grid = []
-        # init graph
-        graph = {}
-
-        for i in range(0, n):
-            graph[i] = list()
-
-    print("--------------------------")
-
-print("Found connected component which contains " + str((size_of_largest_component / n) * 100) +
-      "% of all nodes using a radius of " + str(r))
-
-# write graph to file to use it in the SIR simulation later on
-write_graph_to_file(graph, "graph_t" + str(threshold).replace(".", "_")
-                    + "_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+    if (len(infected_nodes) + len(recovered_nodes)) > (n / 3):
+        print("outbreak!")
+        break
+    round_counter += 1
