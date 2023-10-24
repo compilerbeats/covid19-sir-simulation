@@ -8,7 +8,7 @@ n = 1000000
 r = float(sys.argv[1])
 include_long_range = int(sys.argv[2])
 threshold = 0.9
-a = 2
+a = 1.1
 
 sqrt_n = int(math.sqrt(n))
 
@@ -199,5 +199,5 @@ print("Found connected component which contains " + str((size_of_largest_compone
       "% of all nodes using a radius of " + str(r))
 
 # write graph to file to use it in the SIR simulation later on
-write_graph_to_file(graph, "graph_t" + str(threshold).replace(".", "_")
+write_graph_to_file(graph, "graph_t" + str(threshold).replace(".", "_") + "_a" + str(a).replace(".", "_")
                     + "_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
