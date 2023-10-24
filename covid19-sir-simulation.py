@@ -54,12 +54,12 @@ graph[idx_infected][1][1] = EMPTY_STATE
 
 print(graph[idx_infected])
 
-infected_nodes = {idx_infected}
+infectious_nodes = {idx_infected}
 recovered_nodes = set()
 beta = 0.6
 
 while round_counter < MAX_ROUNDS:
-    for infected_node in infected_nodes:
+    for infected_node in infectious_nodes:
         # has infected_node any neighbours?
         if len(graph[infected_node][0]) > 0:
             random_neighbour = graph[infected_node][0][random.randint(0, len(graph[infected_node][0]) - 1)]
@@ -78,21 +78,21 @@ while round_counter < MAX_ROUNDS:
             graph[node][1][1] = EMPTY_STATE
 
             if graph[node][1][0] == INFECTIOUS:
-                infected_nodes.add(node)
+                infectious_nodes.add(node)
 
             if graph[node][1][0] == RECOVERED:
-                infected_nodes.discard(node)
+                infectious_nodes.discard(node)
                 recovered_nodes.add(node)
 
-    if (len(infected_nodes) + len(recovered_nodes)) > (n / 3):
+    if (len(infectious_nodes) + len(recovered_nodes)) > (n / 3):
         print("outbreak!")
         break
 
-    if len(infected_nodes) == 0:
+    if len(infectious_nodes) == 0:
         print("no infected nodes left!")
         break
     round_counter += 1
 
     if round_counter % 10 == 0:
-        print("infected nodes: " + str(len(infected_nodes)))
+        print("infected nodes: " + str(len(infectious_nodes)))
         print("recovered nodes: " + str(len(recovered_nodes)))
