@@ -5,7 +5,8 @@ import math
 
 input_file = sys.argv[1]
 n = int(sys.argv[2])
-gamma = float(sys.argv[3])
+beta = float(sys.argv[3])
+gamma = float(sys.argv[4])
 
 round_counter = 0
 MAX_ROUNDS = math.sqrt(n)
@@ -56,8 +57,6 @@ print(graph[idx_infected])
 
 infectious_nodes = {idx_infected}
 recovered_nodes = set()
-beta = 0.6
-
 while round_counter < MAX_ROUNDS:
     for infected_node in infectious_nodes:
         # has infected_node any neighbours?
