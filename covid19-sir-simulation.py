@@ -1,9 +1,8 @@
-import math
 import sys
 import random
 import math
 
-input_file = sys.argv[1]
+graph_input_file = sys.argv[1]
 n = int(sys.argv[2])
 beta = float(sys.argv[3])
 gamma = float(sys.argv[4])
@@ -17,7 +16,7 @@ RECOVERED = 'R'
 EMPTY_STATE = ''
 
 def read_graph(file_path):
-    graph = {}
+    input_graph = {}
     with open(file_path, 'r') as file:
         for line in file.readlines():
             # Split the line at the colon
@@ -38,12 +37,12 @@ def read_graph(file_path):
 
             # Add to the graph
             # [adj_list, [curr_status, next_status]]
-            graph[node] = [adj_nodes, [SUSCEPTIBLE, EMPTY_STATE]]
+            input_graph[node] = [adj_nodes, [SUSCEPTIBLE, EMPTY_STATE]]
 
-    return graph
+    return input_graph
 
 # read graph
-graph = read_graph(input_file)
+graph = read_graph(graph_input_file)
 
 # print(graph[0])
 
@@ -53,7 +52,7 @@ idx_infected = random.randint(0, len(graph) - 1)
 graph[idx_infected][1][0] = INFECTIOUS
 graph[idx_infected][1][1] = EMPTY_STATE
 
-print(graph[idx_infected])
+# print(graph[idx_infected])
 
 infectious_nodes = {idx_infected}
 recovered_nodes = set()
@@ -70,7 +69,7 @@ while round_counter < MAX_ROUNDS:
             # recover infected node with probability gamma
             graph[infected_node][1][1] = RECOVERED
 
-    # set new status to every node
+    # set new status to every node and keep track of infectious and recovered nodes
     for node in graph:
         if not graph[node][1][1] == EMPTY_STATE:
             graph[node][1][0] = graph[node][1][1]
@@ -84,14 +83,17 @@ while round_counter < MAX_ROUNDS:
                 recovered_nodes.add(node)
 
     if (len(infectious_nodes) + len(recovered_nodes)) > (n / 3):
-        print("outbreak!")
+        # print("outbreak after " + str(round_counter) + " rounds!")
         break
 
     if len(infectious_nodes) == 0:
-        print("no infected nodes left!")
+        # print("no infected nodes left!")
+        round_counter = math.inf
         break
     round_counter += 1
 
-    if round_counter % 10 == 0:
+    if False: #round_counter % 10 == 0:
         print("infected nodes: " + str(len(infectious_nodes)))
         print("recovered nodes: " + str(len(recovered_nodes)))
+
+print(graph_input_file + ";" + str(beta) + ";" + str(gamma) + ";" + str(round_counter))

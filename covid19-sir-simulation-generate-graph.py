@@ -6,9 +6,9 @@ import sys
 
 n = 1000000
 r = float(sys.argv[1])
-include_long_range = int(sys.argv[2])
-threshold = 0.9
-a = 1.1
+a = float(sys.argv[2])
+include_long_range = int(sys.argv[3])
+threshold = float(sys.argv[4])
 
 sqrt_n = int(math.sqrt(n))
 
@@ -101,7 +101,6 @@ def build_graph(graph, r):
     for i in range(0, n):
         square_of_i = nodes[i][1]
 
-        # todo: check points in my own square as well!
         # create list of all points which might be inside the radius r
         candidate_points = get_points_of_neighbors(grid, square_of_i[1], square_of_i[0])
 
@@ -117,6 +116,7 @@ def build_graph(graph, r):
         if include_long_range == 1:
             e_x = -1
             e_y = -1
+            # draw new random values if the long range edge would land outside of the grid
             while not ((0 <= e_x < sqrt_n) and (0 <= e_y < sqrt_n)):
                 angle = random.uniform(0, 2 * math.pi)
                 x = random.uniform(0, 1)
@@ -150,6 +150,7 @@ def build_graph(graph, r):
 
     print("building graph with radius " + str(r) + " done")
     print("No long range edge drawn in " + str(no_long_range_counter) + " cases")
+
 
 def write_graph_to_file(graph, file_path):
     with open(file_path, 'w') as file:
@@ -199,5 +200,6 @@ print("Found connected component which contains " + str((size_of_largest_compone
       "% of all nodes using a radius of " + str(r))
 
 # write graph to file to use it in the SIR simulation later on
-write_graph_to_file(graph, "graph_t" + str(threshold).replace(".", "_") + "_a" + str(a).replace(".", "_")
-                    + "_" + datetime.now().strftime("%Y_%m_%d_%H_%M_%S"))
+graph_file_name = "graph_" + ("r" + str(r).replace('.', '_')) + ("_a" + str(a).replace(".", "_")) + \
+                  ("_lr" + str(include_long_range)) + ("_t" + str(threshold).replace(".", "_"))
+write_graph_to_file(graph, graph_file_name)
