@@ -1,14 +1,14 @@
-import random
 import math
-from datetime import datetime
 from collections import deque
 import sys
+import random
 
-n = 1000000
-r = float(sys.argv[1])
-a = float(sys.argv[2])
-include_long_range = int(sys.argv[3])
-threshold = float(sys.argv[4])
+input_points = sys.argv[1]
+n = int(sys.argv[2])
+r = float(sys.argv[3])
+a = float(sys.argv[4])
+include_long_range = int(sys.argv[5])
+threshold = float(sys.argv[6])
 
 sqrt_n = int(math.sqrt(n))
 
@@ -16,18 +16,15 @@ sqrt_n = int(math.sqrt(n))
 # add an additional row and column in order to work with uneven radii
 grid = [[[] for _ in range(int(sqrt_n / r) + 1)] for _ in range(int(sqrt_n / r) + 1)]
 
-# place nodes randomly on "play field"
+# read points from file
 nodes = {}
-for i in range(0, n):
-    x = math.trunc(random.uniform(0, sqrt_n) * 100.0) / 100.0
-    y = math.trunc(random.uniform(0, sqrt_n) * 100.0) / 100.0
-
-    # store point and metadata
-    nodes[i] = [(x, y), None, 'S', '']
-
-# print(nodes[0])
-
-# print(grid[0][10])
+with open(input_points, 'r') as file:
+    for line in file:
+        key, x, y, meta1, meta2, meta3 = line.strip().split(',')
+        key = int(key)
+        x = float(x)
+        y = float(y)
+        nodes[key] = [(x, y), meta1 if meta1 else None, meta2, meta3]
 
 # init graph
 graph = {}
