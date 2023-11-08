@@ -7,7 +7,7 @@ import random
 
 graph_input_file = sys.argv[1]
 n = int(sys.argv[2])
-alpha = int(sys.argv[3])
+alpha = float(sys.argv[3])
 beta = float(sys.argv[4])
 gamma = float(sys.argv[5])
 write_to_output_file = 0
