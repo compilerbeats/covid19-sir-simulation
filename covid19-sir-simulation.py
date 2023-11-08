@@ -1,9 +1,9 @@
 # usage: py covid19-sir-simulation.py graph_r1_5_a1_1_lr1_t0_9 1000000 0.6 0.3
 
 import sys
-import random
 import math
 import statistics
+import random
 
 graph_input_file = sys.argv[1]
 n = int(sys.argv[2])
@@ -17,7 +17,7 @@ INFECTIOUS = 'I'
 RECOVERED = 'R'
 EMPTY_STATE = ''
 
-def read_graph(file_path):
+def read_graph(file_path, infectious_nodes):
     input_graph = {}
     with open(file_path, 'r') as file:
         for line in file.readlines():
@@ -32,6 +32,10 @@ def read_graph(file_path):
             node, adj_list_str = parts
 
             # Convert the node to an integer
+            is_infectious = False
+            if "_I" in node:
+                is_infectious = True
+                node = node.replace("_I", "")
             node = int(node.strip())
 
             # Split the adjacent nodes string by commas and convert to integers
@@ -39,28 +43,25 @@ def read_graph(file_path):
 
             # Add to the graph
             # [adj_list, [curr_status, next_status]]
-            input_graph[node] = [adj_nodes, [SUSCEPTIBLE, EMPTY_STATE]]
+            if is_infectious:
+                input_graph[node] = [adj_nodes, [INFECTIOUS, EMPTY_STATE]]
+                infectious_nodes.add(node)
+            else:
+                input_graph[node] = [adj_nodes, [SUSCEPTIBLE, EMPTY_STATE]]
 
     return input_graph
+
+
 number_of_simulations = 10
 current_simulation = 1
 simulations = list()
 while current_simulation <= number_of_simulations:
     round_counter = 0
     # read graph
-    graph = read_graph(graph_input_file)
+    infectious_nodes = set()
+    graph = read_graph(graph_input_file, infectious_nodes)
 
     # print(graph[0])
-
-    # set random node to I (infected)
-    idx_infected = random.randint(0, len(graph) - 1)
-
-    graph[idx_infected][1][0] = INFECTIOUS
-    graph[idx_infected][1][1] = EMPTY_STATE
-
-    # print(graph[idx_infected])
-
-    infectious_nodes = {idx_infected}
     recovered_nodes = set()
     while round_counter < MAX_ROUNDS:
         for infected_node in infectious_nodes:
@@ -96,11 +97,18 @@ while current_simulation <= number_of_simulations:
             # print("no infected nodes left!")
             round_counter = math.inf
             break
-        round_counter += 1
 
         if False: #round_counter % 10 == 0:
             print("infected nodes: " + str(len(infectious_nodes)))
             print("recovered nodes: " + str(len(recovered_nodes)))
+
+        round_counter += 1
+
+    if round_counter >= 1000 and len(infectious_nodes) > 0:
+        print("reached maximum number of rounds")
+        print("infected nodes: " + str(len(infectious_nodes)))
+        print("recovered nodes: " + str(len(recovered_nodes)))
+        round_counter = math.inf
 
     print(graph_input_file + ";" + str(beta) + ";" + str(gamma) + ";" + str(round_counter))
     simulations.append(round_counter)

@@ -34,8 +34,10 @@ for i in range(0, n):
 
 print(len(graph))
 
+
 def is_threshold_reached(total, current, threshold):
     return current / total >= threshold
+
 
 def bfs(node, graph, visited):
     queue = deque([node])
@@ -52,6 +54,8 @@ def bfs(node, graph, visited):
                 count += 1
 
     return count  # return the count instead of just returning
+
+
 def largest_connected_component(graph):
     visited = set()
     largest_size = 0
@@ -63,35 +67,38 @@ def largest_connected_component(graph):
 
     return largest_size
 
+
 def calculate_distance(x1, y1, x2, y2):
     return math.dist((x1, y1), (x2, y2))
 
+
 def get_points_of_neighbors(grid, row, col):
-    # List to store the neighbors
+    # list to store the neighbors
     neighbors = []
 
-    # Total number of rows and columns in the grid
+    # total number of rows and columns in the grid
     num_rows = len(grid)
     num_cols = len(grid[0]) if grid else 0
 
-    # Possible directions to move in the grid, including diagonals
+    # possible directions to move in the grid, including diagonals
     directions = [
-        (-1, 0), (1, 0), (0, -1), (0, 1),  # up, down, left, right
-        (0, 0), # include itself
+        (-1, 0), (1, 0), (0, -1), (0, 1),   # up, down, left, right
+        (0, 0),                             # include itself
         (-1, -1), (-1, 1), (1, -1), (1, 1)  # diagonal directions
     ]
 
-    # Check all directions
+    # check all directions
     for dr, dc in directions:
-        # Calculate the neighboring row and column
+        # calculate the neighboring row and column
         n_row, n_col = row + dr, col + dc
 
-        # Check if the neighboring cell is within the grid boundaries
+        # check if the neighboring cell is within the grid boundaries
         if 0 <= n_row < num_rows and 0 <= n_col < num_cols:
-            # Add the neighboring cell to the list of neighbors
+            # add the neighboring cell to the list of neighbors
             neighbors += grid[n_row][n_col]
 
     return neighbors
+
 
 def build_graph(graph, r):
     no_long_range_counter = 0
@@ -124,8 +131,10 @@ def build_graph(graph, r):
 
             square_of_e = (math.floor(e_x / r), math.floor(e_y / r))
 
+            # find possible candidates for the long range edge
             long_range_candidates = get_points_of_neighbors(grid, square_of_e[1], square_of_e[0])
 
+            # choose closest neighbour, if there is any at all
             min_distance = sys.float_info.max
             v = None
             for candidate in long_range_candidates:
@@ -135,6 +144,7 @@ def build_graph(graph, r):
                     min_distance = distance_to_long_range_candidate
                     v = candidate
 
+            # add long range edge to adjacency liste
             if v is not None:
                 if v not in graph[i] and v != i:
                     graph[i].append(v)
@@ -152,7 +162,12 @@ def build_graph(graph, r):
 def write_graph_to_file(graph, file_path):
     with open(file_path, 'w') as file:
         for node, neighbors in graph.items():
-            # Convert the list of neighbors to a string, and write to the file
+            # mark the initially infected nodes
+            if nodes[node][2] == 'I':
+                print("infectious node " + str(node) + " found")
+                node = str(node) + "_I"
+
+            # convert the list of neighbors to a string, and write to the file
             neighbors_str = ', '.join(map(str, neighbors))
             file.write(f"{node}: {neighbors_str}\n")
 
@@ -195,6 +210,7 @@ while not is_threshold_reached(n, size_of_largest_component, threshold):
 
 print("Found connected component which contains " + str((size_of_largest_component / n) * 100) +
       "% of all nodes using a radius of " + str(r))
+
 
 # write graph to file to use it in the SIR simulation later on
 graph_file_name = "graph_" + ("r" + str(r).replace('.', '_')) + ("_a" + str(a).replace(".", "_")) + \
