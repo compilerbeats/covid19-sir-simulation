@@ -52,6 +52,6 @@ for idx in infectious_nodes:
     # print(nodes[idx])
 
 # write to file
-with open('points.txt', 'w') as file:
+with open('points', 'w') as file:
     for key, value in nodes.items():
         file.write(f"{key},{value[0][0]},{value[0][1]},{value[1]},{value[2]},{value[3]}\n")
