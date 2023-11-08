@@ -26,7 +26,7 @@ The parameters are described by:
 - $n$: number of points
 - $r$: radius
 - $a$: alpha
-- $include{\_}long{\_}range$: either 0 or 1
+- $include \texttt{_} long \texttt{_} range$: either 0 or 1
 - $threshold$: percentage of the total nodes that should be contained in the largest connected component (0.0, 1.0]
 
 ## Execute simulation
