@@ -35,9 +35,10 @@ The parameters are described by:
 Now that all preparations are done, we can finally execute the simulation on the generated graph by
 
 ```
-py covid19-sir-simulation.py graph_input_file n beta gamma
+py covid19-sir-simulation.py graph_input_file n alpha beta gamma
 ```
 
-where $\beta$ is the probability for an infectious node to infect a random neighbour if it is susceptible and $\gamma$ 
-represents the probability that an infectious node recovers after each simulation round.
+where $\alpha$ is the parameter of the given graph, $\beta$ is the probability for an infectious node to infect a random 
+neighbour if it is susceptible and $\gamma$ represents the probability that an infectious node recovers after each 
+simulation round.
 
