@@ -11,7 +11,7 @@ alpha = float(sys.argv[3])
 beta = float(sys.argv[4])
 gamma = float(sys.argv[5])
 write_to_output_file = 0
-if len(sys.argv) > 5:
+if len(sys.argv) > 6:
     write_to_output_file = int(sys.argv[6])
 
 MAX_ROUNDS = math.sqrt(n)
