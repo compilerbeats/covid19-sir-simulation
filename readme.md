@@ -5,7 +5,7 @@ These scripts can be used to simulate the SIR model on a geometric graph built u
 # Usage
 ## Generate points
 
-First, we randomly place our $n$ points on the play field (square with side length $sqrt{n}$) by executing
+First, we randomly place our $n$ points on the play field (square with side length $\sqrt{n}$) by executing
 
 ```
 py covid19-sir-simulation-generate-points.py n k
@@ -26,7 +26,7 @@ The parameters are described by:
 - $n$: number of points
 - $r$: radius
 - $a$: alpha
-- $include_long_range$: either 0 or 1
+- $include\_long\_range$: either 0 or 1
 - $threshold$: percentage of the total nodes that should be contained in the largest connected component (0.0, 1.0]
 
 ## Execute simulation
@@ -37,6 +37,6 @@ Now that all preparations are done, we can finally execute the simulation on the
 py covid19-sir-simulation.py graph_input_file n beta gamma
 ```
 
-where $beta$ is the probability for a infectious node to infect a random neighbour if it is susceptible and $gamma$ 
-represents the probability that a infectious node recovers after each simulation round.
+where $\beta$ is the probability for an infectious node to infect a random neighbour if it is susceptible and $\gamma$ 
+represents the probability that an infectious node recovers after each simulation round.
 
