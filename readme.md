@@ -1,6 +1,7 @@
 # Overview
 
-These scripts can be used to simulate the SIR model on a geometric graph built upon $n$ points generated on a play field.
+These scripts can be used to simulate the SIR model on a radnom geometric graph built upon $n$ points generated on a 
+play field.
 
 # Usage
 ## Generate points
