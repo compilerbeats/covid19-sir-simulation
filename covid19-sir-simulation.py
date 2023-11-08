@@ -7,8 +7,12 @@ import random
 
 graph_input_file = sys.argv[1]
 n = int(sys.argv[2])
-beta = float(sys.argv[3])
-gamma = float(sys.argv[4])
+alpha = int(sys.argv[3])
+beta = float(sys.argv[4])
+gamma = float(sys.argv[5])
+write_to_output_file = 0
+if len(sys.argv) > 5:
+    write_to_output_file = int(sys.argv[6])
 
 MAX_ROUNDS = math.sqrt(n)
 
@@ -118,4 +122,9 @@ while current_simulation <= number_of_simulations:
     infectious_nodes = set()
     recovered_nodes = set() 
 
-print("median of " + str(number_of_simulations) + ": " + str(statistics.median(simulations)))
+median = statistics.median(simulations)
+print("median of " + str(number_of_simulations) + ": " + str(median))
+
+if write_to_output_file == 1:
+    with open("covid19-sir-simulation-results.csv", 'a') as results_file:
+        results_file.write(str(alpha) + ";" + str(beta) + ";" + str(gamma) + ";" + str(median))
