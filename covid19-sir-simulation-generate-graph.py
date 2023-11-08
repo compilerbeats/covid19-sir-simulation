@@ -108,7 +108,7 @@ def build_graph(graph, r):
         # create list of all points which might be inside the radius r
         candidate_points = get_points_of_neighbors(grid, square_of_i[1], square_of_i[0])
 
-        # check if any of the candidates has a distance less or equal to r
+        # check if any of the candidates has a distance less than r
         for candidate in candidate_points:
             if calculate_distance(nodes[i][0][0], nodes[i][0][1], nodes[candidate][0][0], nodes[candidate][0][1]) < r:
                 if candidate not in graph[i] and i != candidate:
