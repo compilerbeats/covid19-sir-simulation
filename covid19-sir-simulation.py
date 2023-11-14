@@ -127,4 +127,4 @@ print("median of " + str(number_of_simulations) + ": " + str(median))
 
 if write_to_output_file == 1:
     with open("covid19-sir-simulation-results.csv", 'a') as results_file:
-        results_file.write(str(alpha) + ";" + str(beta) + ";" + str(gamma) + ";" + str(median))
+        results_file.write(str(alpha) + ";" + str(beta) + ";" + str(gamma) + ";" + str(median) + "\n")
