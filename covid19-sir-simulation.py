@@ -1,5 +1,5 @@
 # usage: py covid19-sir-simulation.py graph_r1_5_a1_1_lr1_t0_9 1000000 0.6 0.3
-
+import os.path
 import sys
 import math
 import statistics
@@ -56,9 +56,10 @@ def read_graph(file_path, infectious_nodes):
     return input_graph
 
 
-number_of_simulations = 10
+number_of_simulations = 30
 current_simulation = 1
 simulations = list()
+# execute infinte amount of rounds until either the outbreak threshold is reached or no infectious nodes are left
 while current_simulation <= number_of_simulations:
     round_counter = 0
     # read graph
@@ -67,7 +68,7 @@ while current_simulation <= number_of_simulations:
 
     # print(graph[0])
     recovered_nodes = set()
-    while round_counter < MAX_ROUNDS:
+    while True: # round_counter < MAX_ROUNDS:
         for infected_node in infectious_nodes:
             # has infected_node any neighbours?
             if len(graph[infected_node][0]) > 0:
@@ -102,13 +103,14 @@ while current_simulation <= number_of_simulations:
             round_counter = math.inf
             break
 
-        if False: #round_counter % 10 == 0:
+        if False:  #round_counter % 10 == 0:
             print("infected nodes: " + str(len(infectious_nodes)))
             print("recovered nodes: " + str(len(recovered_nodes)))
 
         round_counter += 1
 
-    if round_counter >= 1000 and len(infectious_nodes) > 0:
+    # do not execute this code since we deactivated the maximum number of rounds
+    if False:  # round_counter >= 1000 and len(infectious_nodes) > 0:
         print("reached maximum number of rounds")
         print("infected nodes: " + str(len(infectious_nodes)))
         print("recovered nodes: " + str(len(recovered_nodes)))
@@ -126,5 +128,14 @@ median = statistics.median(simulations)
 print("median of " + str(number_of_simulations) + ": " + str(median))
 
 if write_to_output_file == 1:
-    with open("covid19-sir-simulation-results.csv", 'a') as results_file:
-        results_file.write(str(alpha) + ";" + str(beta) + ";" + str(gamma) + ";" + str(median) + "\n")
+    output_filename = "covid19-sir-simulation-results-alpha-" + str(alpha)
+    if os.path.exists(output_filename) and os.path.getsize(output_filename) > 0:
+        # file already exists and there is already some result in it
+        with open(output_filename, 'a') as results_file:
+            results_file.write(str(alpha) + ";" + str(beta) + ";" + str(gamma) + ";" + str(median) + "\n")
+    else:
+        with open(output_filename, 'w') as results_file:
+            results_file.write("alpha;beta;gamma;r_median\n")
+            # write header line into file and append first result
+            results_file.write(str(alpha) + ";" + str(beta) + ";" + str(gamma) + ";" + str(median) + "\n")
+
