@@ -59,7 +59,7 @@ def read_graph(file_path, infectious_nodes):
 number_of_simulations = 30
 current_simulation = 1
 simulations = list()
-# execute infinte amount of rounds until either the outbreak threshold is reached or no infectious nodes are left
+# execute infinite amount of rounds until either the outbreak threshold is reached or no infectious nodes are left
 while current_simulation <= number_of_simulations:
     round_counter = 0
     # read graph
