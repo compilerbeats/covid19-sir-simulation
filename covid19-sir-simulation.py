@@ -1,4 +1,4 @@
-# usage: py covid19-sir-simulation.py graph_r1_5_a1_1_lr1_t0_9 1000000 0.6 0.3
+# usage: py covid19-sir-simulation.py graph_r1_5_a1_1_lr1_t0_9 1000000 1.1 0.6 0.3 1
 import os.path
 import sys
 import math
@@ -59,15 +59,14 @@ def read_graph(file_path, infectious_nodes):
 number_of_simulations = 30
 current_simulation = 1
 simulations = list()
-# execute infinite amount of rounds until either the outbreak threshold is reached or no infectious nodes are left
 while current_simulation <= number_of_simulations:
     round_counter = 0
     # read graph
     infectious_nodes = set()
     graph = read_graph(graph_input_file, infectious_nodes)
 
-    # print(graph[0])
     recovered_nodes = set()
+    # execute infinite amount of rounds until either the outbreak threshold is reached or no infectious nodes are left
     while True: # round_counter < MAX_ROUNDS:
         for infected_node in infectious_nodes:
             # has infected_node any neighbours?

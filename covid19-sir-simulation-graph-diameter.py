@@ -1,3 +1,4 @@
+# usage: py covid19-sir-simulation-graph-diameter.py
 import random
 from collections import deque
 
@@ -6,22 +7,22 @@ def read_graph(file_path):
     input_graph = {}
     with open(file_path, 'r') as file:
         for line in file.readlines():
-            # Split the line at the colon
+            # split the line at the colon
             parts = line.split(':', 1)
 
-            # If the line isn't in the correct format, skip it
+            # if the line isn't in the correct format, skip it
             if len(parts) != 2:
                 continue
 
-            # Extract the node and the adjacent nodes
+            # extract the node and the adjacent nodes
             node, adj_list_str = parts
 
-            # Convert the node to an integer, while replacing the infectious marker if necessary
+            # convert the node to an integer, while replacing the infectious marker if necessary
             if "_I" in node:
                 node = node.replace("_I", "")
             node = int(node.strip())
 
-            # Split the adjacent nodes string by commas and convert to integers
+            # split the adjacent nodes string by commas and convert to integers
             adj_nodes = [int(adj_node.strip()) for adj_node in adj_list_str.split(',') if adj_node.strip().isdigit()]
 
             input_graph[node] = adj_nodes
@@ -50,17 +51,17 @@ def bfs(graph, start):
 
 
 def four_sweep_approximation(graph):
-    # First Sweep
+    # first Sweep
     random_vertex = random.choice(list(graph.keys()))
     u, _ = bfs(graph, random_vertex)
 
-    # Second Sweep
+    # second Sweep
     v, _ = bfs(graph, u)
 
-    # Third Sweep
+    # third Sweep
     w, _ = bfs(graph, v)
 
-    # Fourth Sweep
+    # fourth Sweep
     x, max_distance = bfs(graph, w)
 
     return max_distance
