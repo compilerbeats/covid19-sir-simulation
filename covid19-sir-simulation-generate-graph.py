@@ -1,3 +1,4 @@
+# usage: py covid19-sir-simulation-generate-graph.py points 1000000 1.5 2.8 1 0.9
 import math
 from collections import deque
 import sys
